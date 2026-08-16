@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Cổng Quản Lý Nhiệm Vụ Công An</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { padding: 15px; background-color: #f4f6f9; font-size: 15px; }
+    .card-item { margin-bottom: 12px; border-radius: 10px; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .loading { display: none; text-align: center; margin: 30px 0; }
+    .badge-stt { background-color: #0d6efd; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+    .done-card { background-color: #e8f5e9 !important; border-left: 4px solid #2e7d32; }
+    .box-check { background-color: #f8f9fa; border: 1px solid #e9ecef; }
+    .stat-card { border: none; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+    .progress { height: 8px; border-radius: 4px; }
+    .nav-pills .nav-link { font-weight: bold; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container p-0">
+    <div class="bg-white p-3 rounded-3 mb-3 shadow-sm text-center">
+      <h5 class="text-primary fw-bold m-0">HỆ THỐNG QUẢN LÝ NHIỆM VỤ CÔNG TÁC</h5>
+    </div>
+    
+    <!-- THANH CHUYỂN ĐỔI TAB (CẬP NHẬT NHIỆM VỤ & DASHBOARD) -->
+    <ul class="nav nav-pills nav-fill mb-3 bg-white p-2 rounded shadow-sm">
+      <li class="nav-item">
+        <a class="nav-link active" id="tabUpdate" href="#" onclick="switchTab('update')">📝 Cập Nhật Nhiệm Vụ</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link text-secondary" id="tabDashboard" href="#" onclick="switchTab('dashboard')">📊 Dashboard Tiến Độ</a>
+      </li>
+    </ul>
+
+    <!-- KHU VỰC 1: TRANG CẬP NHẬT NHIỆM VỤ -->
+    <div id="viewUpdate">
+      <!-- Khung tiến độ cá nhân / theo nhiệm vụ hiện tại -->
+      <div id="statsSection" class="mb-3" style="display:none;">
+        <div class="card stat-card p-3 bg-white border-start border-primary border-4">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold text-primary small" id="statsTitle">ĐÁNH GIÁ TIẾN ĐỘ THỰC HIỆN</span>
+            <span class="badge bg-primary fw-bold" id="statPercent">0%</span>
+          </div>
+          <div class="row text-center g-2 mb-2">
+            <div class="col-4">
+              <div class="p-2 bg-light rounded">
+                <small class="text-muted d-block" style="font-size:11px;">CHỈ TIÊU</small>
+                <strong class="text-dark" id="statTotal">0</strong>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-2 bg-light rounded">
+                <small class="text-muted d-block" style="font-size:11px;">ĐÃ LÀM</small>
+                <strong class="text-success" id="statDone">0</strong>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="p-2 bg-light rounded">
+                <small class="text-muted d-block" style="font-size:11px;">CÒN LẠI</small>
+                <strong class="text-danger" id="statRemain">0</strong>
+              </div>
+            </div>
+          </div>
+          <div class="progress">
+            <div id="progressBar" class="progress-bar bg-success" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card p-3 mb-3 shadow-sm border-0">
+        <label class="form-label fw-bold text-secondary small">BƯỚC 1: CHỌN NHIỆM VỤ</label>
+        <select id="taskSelect" class="form-select border-primary fw-bold text-dark" onchange="onTaskChange()">
+          <option value="">-- Chọn nội dung nhiệm vụ --</option>
+          <option value="hkcch">Hộ không có chủ hộ (HKCCH)</option>
+          <option value="matuy">Test đối tượng ma túy</option>
+          <option value="dcttp">Điều chỉnh Tổ dân phố (ĐCTTP)</option>
+          <option value="datdai">Làm sạch dữ liệu đất đai (Lần 4)</option>
+        </select>
+      </div>
+
+      <div id="staffSection" class="card p-3 mb-3 shadow-sm border-0" style="display:none;">
+        <label class="form-label fw-bold text-secondary small">BƯỚC 2: CHỌN TÊN CÁN BỘ</label>
+        <select id="staffSelect" class="form-select border-success" onchange="onStaffChange()">
+          <option value="">-- Chạm để chọn tên cán bộ --</option>
+        </select>
+      </div>
+
+      <div id="loading" class="loading">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="mt-2 text-muted small">Đang tải dữ liệu...</p>
+      </div>
+
+      <div id="dataContainer" style="display:none;">
+        <h6 class="fw-bold text-dark mb-2 px-1 small">BƯỚC 3: CẬP NHẬT KẾT QUẢ</h6>
+        <div id="itemList"></div>
+      </div>
+    </div>
+
+    <!-- KHU VỰC 2: TRANG DASHBOARD TỔNG QUAN TOÀN CỤC -->
+    <div id="viewDashboard" style="display:none;">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold text-secondary m-0">📊 TỔNG HỢP TIẾN ĐỘ CÁC NHIỆM VỤ</h6>
+        <button class="btn btn-outline-primary btn-sm fw-bold" onclick="loadDashboard()">🔄 Tải lại</button>
+      </div>
+      <div id="dashboardContent">
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="mt-2 text-muted small">Đang tổng hợp dữ liệu...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      var tabUpdate = document.getElementById('tabUpdate');
+      var tabDashboard = document.getElementById('tabDashboard');
+      var viewUpdate = document.getElementById('viewUpdate');
+      var viewDashboard = document.getElementById('viewDashboard');
+
+      if (tab === 'update') {
+        tabUpdate.className = "nav-link active";
+        tabDashboard.className = "nav-link text-secondary";
+        viewUpdate.style.display = 'block';
+        viewDashboard.style.display = 'none';
+      } else {
+        tabDashboard.className = "nav-link active";
+        tabUpdate.className = "nav-link text-secondary";
+        viewDashboard.style.display = 'block';
+        viewUpdate.style.display = 'none';
+        loadDashboard();
+      }
+    }
+
+    function loadDashboard() {
+      var container = document.getElementById('dashboardContent');
+      container.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted small">Đang tổng hợp dữ liệu...</p></div>';
+
+      google.script.run.withSuccessHandler(function(data) {
+        container.innerHTML = '';
+        var tasks = [
+          { key: 'hkcch', name: '🏠 Hộ không có chủ hộ (HKCCH)' },
+          { key: 'matuy', name: '🧪 Test đối tượng ma túy' },
+          { key: 'dcttp', name: '🗺️ Điều chỉnh Tổ dân phố (ĐCTTP)' },
+          { key: 'datdai', name: '📋 Làm sạch dữ liệu đất đai (Lần 4)' }
+        ];
+
+        tasks.forEach(function(t) {
+          var stat = data[t.key];
+          var card = document.createElement('div');
+          card.className = 'card stat-card p-3 mb-3 bg-white border-start border-primary border-4';
+          card.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fw-bold text-dark small">${t.name}</span>
+              <span class="badge bg-primary fw-bold">${stat.percent}%</span>
+            </div>
+            <div class="row text-center g-2 mb-2">
+              <div class="col-4">
+                <div class="p-2 bg-light rounded">
+                  <small class="text-muted d-block" style="font-size:11px;">CHỈ TIÊU</small>
+                  <strong class="text-dark">${stat.total}</strong>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="p-2 bg-light rounded">
+                  <small class="text-muted d-block" style="font-size:11px;">ĐÃ LÀM</small>
+                  <strong class="text-success">${stat.done}</strong>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="p-2 bg-light rounded">
+                  <small class="text-muted d-block" style="font-size:11px;">CÒN LẠI</small>
+                  <strong class="text-danger">${stat.remain}</strong>
+                </div>
+              </div>
+            </div>
+            <div class="progress">
+              <div class="progress-bar bg-success" style="width: ${stat.percent}%"></div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      }).getAllDashboardStats();
+    }
+
+    function onTaskChange() {
+      var taskType = document.getElementById('taskSelect').value;
+      var staffSection = document.getElementById('staffSection');
+      var staffSelect = document.getElementById('staffSelect');
+      var statsSection = document.getElementById('statsSection');
+      
+      document.getElementById('dataContainer').style.display = 'none';
+      staffSelect.innerHTML = '<option value="">-- Chạm để chọn tên cán bộ --</option>';
+      
+      if (!taskType) { 
+        staffSection.style.display = 'none'; 
+        statsSection.style.display = 'none';
+        return; 
+      }
+      
+      staffSection.style.display = 'block';
+      document.getElementById('loading').style.display = 'block';
+
+      google.script.run.withSuccessHandler(function(stats) {
+        statsSection.style.display = 'block';
+        document.getElementById('statsTitle').textContent = "TIẾN ĐỘ CHUNG TOÀN NHIỆM VỤ";
+        document.getElementById('statTotal').textContent = stats.total;
+        document.getElementById('statDone').textContent = stats.done;
+        document.getElementById('statRemain').textContent = stats.remain;
+        document.getElementById('statPercent').textContent = stats.percent + '%';
+        document.getElementById('progressBar').style.width = stats.percent + '%';
+      }).getTaskStats(taskType);
+
+      google.script.run.withSuccessHandler(function(staffList) {
+        document.getElementById('loading').style.display = 'none';
+        staffList.forEach(function(s) {
+          var opt = document.createElement('option');
+          opt.value = s.id; opt.textContent = s.name;
+          staffSelect.appendChild(opt);
+        });
+      }).getStaffList(taskType);
+    }
+
+    function onStaffChange() {
+      var taskType = document.getElementById('taskSelect').value;
+      var identifier = document.getElementById('staffSelect').value;
+      
+      if (!identifier) { 
+        document.getElementById('dataContainer').style.display = 'none'; 
+        onTaskChange();
+        return; 
+      }
+      
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('dataContainer').style.display = 'none';
+      
+      google.script.run.withSuccessHandler(function(res) {
+        document.getElementById('loading').style.display = 'none';
+        
+        document.getElementById('statsTitle').textContent = "ĐÁNH GIÁ TIẾN ĐỘ CÁ NHÂN CÁN BỘ";
+        document.getElementById('statTotal').textContent = res.stats.total;
+        document.getElementById('statDone').textContent = res.stats.done;
+        document.getElementById('statRemain').textContent = res.stats.remain;
+        document.getElementById('statPercent').textContent = res.stats.percent + '%';
+        document.getElementById('progressBar').style.width = res.stats.percent + '%';
+
+        document.getElementById('dataContainer').style.display = 'block';
+        var listDiv = document.getElementById('itemList'); listDiv.innerHTML = '';
+        
+        var records = res.records;
+        if (records.length === 0) {
+          listDiv.innerHTML = '<div class="alert alert-success text-center fw-bold">Không có dữ liệu hoặc đã hoàn thành chỉ tiêu theo phân công!</div>';
+          return;
+        }
+
+        records.forEach(function(r) {
+          var card = document.createElement('div');
+          card.className = 'card card-item p-3 ' + (r.isDone ? 'done-card' : '');
+          card.id = 'card_' + r.stt;
+          
+          if (taskType === 'dcttp') {
+            card.innerHTML = `
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge-stt">STT: ${r.stt}</span>
+                <span class="badge ${r.isDone ? 'bg-success' : 'bg-secondary'}">${r.isDone ? 'Đã điều chỉnh' : 'Chưa điều chỉnh'}</span>
+              </div>
+              <div class="small text-dark">
+                <div class="fw-bold text-primary fs-6 mb-1">${r.hoTen || '...'}</div>
+                <div class="mb-2">Tổng nhân khẩu cần điều chỉnh là: <strong class="text-danger fs-6">${r.info1 || '0'}</strong></div>
+                <div class="mt-2 pt-2 border-top">
+                  <label class="form-label small fw-bold mb-1">Số lượng đã điều chỉnh:</label>
+                  <div class="input-group input-group-sm">
+                    <input type="number" id="input_dcttp_${r.stt}" class="form-control" value="${r.statusText || ''}" placeholder="Nhập số lượng...">
+                    <button class="btn btn-primary fw-bold px-3" onclick="saveDcttpRecord(${r.stt}, this)">LƯU</button>
+                  </div>
+                </div>
+              </div>
+            `;
+          } else if (taskType === 'hkcch') {
+            var tenTo = r.toDanPho.toLowerCase().includes('tổ') ? r.toDanPho : ('Tổ dân phố ' + (r.toDanPho.match(/\d+/) || r.toDanPho));
+            card.innerHTML = `
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge-stt">STT: ${r.stt}</span>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="check_${r.stt}" ${r.isDone ? 'checked' : ''} onchange="saveSimpleStatus('hkcch', ${r.stt}, this)">
+                  <label class="form-check-label fw-bold small ${r.isDone ? 'text-success' : 'text-muted'}" id="label_${r.stt}">
+                    ${r.isDone ? 'Đã thực hiện' : 'Chưa thực hiện'}
+                  </label>
+                </div>
+              </div>
+              <div class="small text-dark">
+                <div><strong>Họ tên chủ hộ:</strong> <span class="text-primary fw-bold">${r.hoTen || '...'}</span></div>
+                <div><strong>Số hồ sơ:</strong> ${r.info1 || '...'} | <strong>Khu vực:</strong> ${tenTo}</div>
+              </div>
+            `;
+          } else if (taskType === 'matuy') {
+            var tenTo = r.toDanPho.toLowerCase().includes('tổ') ? r.toDanPho : ('Tổ dân phố ' + (r.toDanPho.match(/\d+/) || r.toDanPho));
+            card.innerHTML = `
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge-stt">STT: ${r.stt}</span>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="check_${r.stt}" ${r.isDone ? 'checked' : ''} onchange="saveSimpleStatus('matuy', ${r.stt}, this)">
+                  <label class="form-check-label fw-bold small ${r.isDone ? 'text-success' : 'text-muted'}" id="label_${r.stt}">
+                    ${r.isDone ? 'Đã Test' : 'Chưa Test'}
+                  </label>
+                </div>
+              </div>
+              <div class="small text-dark">
+                <div><strong>Họ tên đối tượng:</strong> <span class="text-danger fw-bold">${r.hoTen || '...'}</span></div>
+                <div><strong>Thông tin:</strong> ${r.info1 || '...'} | <strong>Khu vực:</strong> ${tenTo}</div>
+              </div>
+            `;
+          } else {
+            card.innerHTML = `
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge-stt">STT: ${r.stt}</span>
+              </div>
+              <h6 class="fw-bold text-primary mb-1">${r.chuHo || 'Không rõ tên'}</h6>
+              <div class="small text-dark mb-2">
+                CMND: <strong class="text-danger">${r.cmnd || 'Không có'}</strong> | NS gốc: <strong>${r.namSinh || '...'}</strong>
+                <span class="text-muted d-block mt-1 fst-italic">ĐC: ${r.diaChi || ''}</span>
+              </div>
+              
+              <div class="row g-2 mb-2 mt-2">
+                <div class="col-6">
+                  <div class="form-check box-check p-2 rounded d-flex align-items-center justify-content-center">
+                    <input class="form-check-input me-2" type="checkbox" id="noInfo_${r.stt}" onchange="toggleLandLogic(${r.stt}, 'noinfo')">
+                    <label class="form-check-label fw-bold text-danger m-0" for="noInfo_${r.stt}">KHÔNG CÓ TT</label>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="form-check box-check p-2 rounded d-flex align-items-center justify-content-center">
+                    <input class="form-check-input me-2" type="checkbox" id="wrongInfo_${r.stt}" onchange="toggleLandLogic(${r.stt}, 'wrong')">
+                    <label class="form-check-label fw-bold text-warning m-0" for="wrongInfo_${r.stt}">SAI THÔNG TIN</label>
+                  </div>
+                </div>
+              </div>
+
+              <div id="div_cccd_${r.stt}">
+                <div class="mb-2">
+                  <label class="form-label small fw-bold mb-1">Số Căn cước / ĐDCN <span class="text-danger">*</span></label>
+                  <input type="number" id="cccd_${r.stt}" class="form-control border-success form-control-sm" placeholder="Nhập đủ 12 số...">
+                </div>
+                <div class="mb-2">
+                  <label class="form-label small fw-bold mb-1">Ngày/Tháng/Năm sinh <span class="text-danger">*</span></label>
+                  <input type="text" id="dob_${r.stt}" class="form-control border-success form-control-sm" placeholder="VD: 15/08/1985">
+                </div>
+              </div>
+
+              <div id="div_wrong_${r.stt}" style="display: none;" class="mb-2">
+                <label class="form-label small fw-bold mb-1 text-warning">Nội dung sai/đính chính <span class="text-danger">*</span></label>
+                <textarea id="wrong_detail_${r.stt}" class="form-control border-warning form-control-sm" rows="2" placeholder="Ví dụ: Sai họ tên..."></textarea>
+              </div>
+
+              <div id="div_reason_${r.stt}" style="display: none;" class="mb-2">
+                <label class="form-label small fw-bold mb-1 text-danger">Lý do <span class="text-danger">*</span></label>
+                <select id="reason_${r.stt}" class="form-select border-danger form-select-sm">
+                  <option value="">-- Chọn lý do --</option>
+                  <option value="Không tìm thấy trên CSDL">Không tìm thấy trên CSDL</option>
+                  <option value="Chết">Chết</option>
+                </select>
+              </div>
+              
+              <button class="btn btn-primary w-100 fw-bold shadow-sm mt-2 btn-sm py-2" onclick="saveLandRecord(${r.stt}, this)">LƯU DỮ LIỆU</button>
+            `;
+          }
+          listDiv.appendChild(card);
+        });
+      }).getDataForTask(taskType, identifier);
+    }
+
+    function toggleLandLogic(stt, type) {
+      var wrongCheck = document.getElementById('wrongInfo_' + stt);
+      var noInfoCheck = document.getElementById('noInfo_' + stt);
+      var divCccd = document.getElementById('div_cccd_' + stt);
+      var divWrong = document.getElementById('div_wrong_' + stt);
+      var divReason = document.getElementById('div_reason_' + stt);
+
+      if (type === 'wrong' && wrongCheck.checked) noInfoCheck.checked = false;
+      if (type === 'noinfo' && noInfoCheck.checked) wrongCheck.checked = false;
+
+      divCccd.style.display = (!wrongCheck.checked && !noInfoCheck.checked) ? 'block' : 'none';
+      divWrong.style.display = wrongCheck.checked ? 'block' : 'none';
+      divReason.style.display = noInfoCheck.checked ? 'block' : 'none';
+    }
+
+    function saveSimpleStatus(taskType, stt, checkbox) {
+      var status = "";
+      if (taskType === 'matuy') status = checkbox.checked ? "Đã Test" : "";
+      else status = checkbox.checked ? "Đã thực hiện" : "";
+
+      var label = document.getElementById('label_' + stt);
+      var card = document.getElementById('card_' + stt);
+      
+      checkbox.disabled = true;
+      google.script.run.withSuccessHandler(function(res) {
+        checkbox.disabled = false;
+        if(res === "Success") {
+          if (checkbox.checked) {
+            label.textContent = (taskType === 'matuy') ? "Đã Test" : "Đã thực hiện";
+            label.className = "form-check-label fw-bold small text-success";
+            card.classList.add('done-card');
+          } else {
+            label.textContent = (taskType === 'matuy') ? "Chưa Test" : "Chưa thực hiện";
+            label.className = "form-check-label fw-bold small text-muted";
+            card.classList.remove('done-card');
+          }
+        } else { alert("Lỗi lưu dữ liệu!"); checkbox.checked = !checkbox.checked; }
+      }).saveTaskRecord(taskType, stt, { status: status });
+    }
+
+    function saveDcttpRecord(stt, btnElement) {
+      var inputVal = document.getElementById('input_dcttp_' + stt).value.trim();
+      if (inputVal === "") {
+        alert("Vui lòng nhập số lượng đã điều chỉnh!");
+        return;
+      }
+      
+      btnElement.disabled = true;
+      btnElement.textContent = "ĐANG LƯU...";
+      
+      google.script.run.withSuccessHandler(function(res) {
+        btnElement.disabled = false;
+        if(res === "Success") {
+          btnElement.textContent = "ĐÃ LƯU ✓";
+          btnElement.className = "btn btn-success fw-bold px-3";
+          var card = document.getElementById('card_' + stt);
+          card.classList.add('done-card');
+        } else {
+          alert("Lỗi lưu dữ liệu!");
+          btnElement.textContent = "LƯU";
+        }
+      }).saveTaskRecord('dcttp', stt, { status: inputVal });
+    }
+
+    function saveLandRecord(stt, btnElement) {
+      var wrongCheck = document.getElementById('wrongInfo_' + stt).checked;
+      var noInfoCheck = document.getElementById('noInfo_' + stt).checked;
+      var mainVal = '', status = '', dob = '';
+
+      if (wrongCheck) {
+        var detail = document.getElementById('wrong_detail_' + stt).value;
+        if (detail.trim().length < 3) { alert('Vui lòng nhập nội dung sai!'); return; }
+        mainVal = detail; status = "Sai thông tin: " + detail; dob = "";
+      } else if (noInfoCheck) {
+        status = document.getElementById('reason_' + stt).value;
+        if (!status) { alert('Vui lòng chọn lý do!'); return; }
+        mainVal = status; dob = "";
+      } else {
+        var cccd = document.getElementById('cccd_' + stt).value;
+        dob = document.getElementById('dob_' + stt).value.trim();
+        if (cccd.length < 12) { alert('Vui lòng nhập đủ 12 số CCCD!'); return; }
+        var dobRegex = /^([0-2]?[0-9]|3[0-1])\/([0-1]?[0-9])\/(\d{4})$/;
+        if (!dobRegex.test(dob)) { alert('Vui lòng nhập định dạng DD/MM/YYYY!'); return; }
+        mainVal = cccd; status = 'Đã cập nhật số CCCD';
+      }
+
+      btnElement.disabled = true; btnElement.textContent = "ĐANG LƯU...";
+      google.script.run.withSuccessHandler(function(res) {
+        if(res === "Success") {
+          btnElement.textContent = "THÀNH CÔNG ✓"; btnElement.className = "btn btn-success w-100 btn-sm";
+          setTimeout(function() { document.getElementById('card_' + stt).style.opacity = '0'; setTimeout(function() { document.getElementById('card_' + stt).style.display = 'none'; }, 500); }, 600);
+        } else { alert("Lỗi hệ thống!"); btnElement.disabled = false; btnElement.textContent = "LƯU DỮ LIỆU"; }
+      }).saveTaskRecord('datdai', stt, { mainVal: mainVal, status: status, dob: dob });
+    }
+  </script>
+</body>
+</html>
