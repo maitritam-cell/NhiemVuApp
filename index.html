@@ -1,468 +1,87 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Cổng Quản Lý Nhiệm Vụ Công An</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body { padding: 15px; background-color: #f4f6f9; font-size: 15px; }
-    .card-item { margin-bottom: 12px; border-radius: 10px; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .loading { display: none; text-align: center; margin: 30px 0; }
-    .badge-stt { background-color: #0d6efd; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-    .done-card { background-color: #e8f5e9 !important; border-left: 4px solid #2e7d32; }
-    .box-check { background-color: #f8f9fa; border: 1px solid #e9ecef; }
-    .stat-card { border: none; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
-    .progress { height: 8px; border-radius: 4px; }
-    .nav-pills .nav-link { font-weight: bold; font-size: 14px; }
-  </style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Nhiệm Vụ Pro</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#687386;--line:#e7ebf2;--primary:#2563eb;--success:#16a34a;--warn:#d97706;--danger:#dc2626}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+.app{display:flex;min-height:100vh}.side{width:250px;background:#0f172a;color:#fff;padding:22px 14px;position:sticky;top:0;height:100vh}
+.brand{font-size:20px;font-weight:800;padding:8px 12px 24px}.brand span{color:#60a5fa}.nav{display:grid;gap:7px}.nav button{border:0;background:transparent;color:#cbd5e1;text-align:left;padding:12px;border-radius:10px;font-size:14px;cursor:pointer}.nav button.active,.nav button:hover{background:#1e293b;color:#fff}
+.content{flex:1;padding:24px;max-width:1600px;margin:auto;width:100%}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.title h1{margin:0;font-size:25px}.title p{margin:6px 0 0;color:var(--muted);font-size:14px}.actions{display:flex;gap:10px}
+.btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px 13px;cursor:pointer;font-weight:700}.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 4px 16px rgba(15,23,42,.04)}
+.kpi .label{color:var(--muted);font-size:13px}.kpi .num{font-size:29px;font-weight:800;margin-top:7px}.kpi .sub{font-size:12px;margin-top:7px}
+.green{color:var(--success)}.orange{color:var(--warn)}.red{color:var(--danger)}.blue{color:var(--primary)}.section{margin-top:16px;display:grid;grid-template-columns:1.25fr .75fr;gap:16px}.section.single{grid-template-columns:1fr}
+.card h3{font-size:15px;margin:0 0 14px}.toolbar{display:flex;gap:8px;margin-bottom:12px}.toolbar input,.toolbar select,.form input,.form select,.form textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:#fff;outline:none}
+.table{width:100%;border-collapse:collapse;font-size:13px}.table th,.table td{padding:12px 10px;border-bottom:1px solid var(--line);text-align:left}.table th{color:var(--muted);font-weight:700}
+.status{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:800}.s-done{background:#dcfce7;color:#166534}.s-doing{background:#dbeafe;color:#1d4ed8}.s-late{background:#fee2e2;color:#991b1b}.s-pending{background:#fef3c7;color:#92400e}
+.progress{height:8px;background:#eef2f7;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;background:var(--primary);border-radius:99px}
+.person{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#dbeafe;color:#1d4ed8;font-weight:800}.person .meta{flex:1}.person strong{font-size:13px}.person small{display:block;color:var(--muted);margin-top:3px}
+.screen{display:none}.screen.active{display:block}.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form .full{grid-column:1/-1}.modal{display:none}.modal.show{display:flex;position:fixed;inset:0;background:rgba(2,6,23,.45);align-items:center;justify-content:center;padding:20px}.modal-box{width:min(700px,100%);background:#fff;border-radius:16px;padding:20px}.modal-head{display:flex;justify-content:space-between;align-items:center}
+@media(max-width:1000px){.side{width:210px}.grid{grid-template-columns:repeat(2,1fr)}.section{grid-template-columns:1fr}}
+@media(max-width:720px){.app{display:block}.side{position:static;width:100%;height:auto}.nav{display:flex;overflow:auto}.nav button{white-space:nowrap}.content{padding:14px}.grid{grid-template-columns:1fr 1fr}.form{grid-template-columns:1fr}.form .full{grid-column:auto}}
+</style>
 </head>
 <body>
-  <div class="container p-0">
-    <div class="bg-white p-3 rounded-3 mb-3 shadow-sm text-center">
-      <h5 class="text-primary fw-bold m-0">HỆ THỐNG QUẢN LÝ NHIỆM VỤ CÔNG TÁC</h5>
-    </div>
-    
-    <!-- THANH CHUYỂN ĐỔI TAB (CẬP NHẬT NHIỆM VỤ & DASHBOARD) -->
-    <ul class="nav nav-pills nav-fill mb-3 bg-white p-2 rounded shadow-sm">
-      <li class="nav-item">
-        <a class="nav-link active" id="tabUpdate" href="#" onclick="switchTab('update')">📝 Cập Nhật Nhiệm Vụ</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-secondary" id="tabDashboard" href="#" onclick="switchTab('dashboard')">📊 Dashboard Tiến Độ</a>
-      </li>
-    </ul>
+<div class="app">
+<aside class="side"><div class="brand">NHIỆM VỤ <span>PRO</span></div><div class="nav">
+<button class="active" data-screen="dashboard">📊 Tổng quan</button><button data-screen="tasks">✅ Công việc</button><button data-screen="timeline">📅 Tiến độ</button><button data-screen="reports">📈 Báo cáo</button><button data-screen="people">👥 Cán bộ</button><button data-screen="admin">⚙️ Quản trị</button>
+</div></aside>
+<main class="content">
+<div class="top"><div class="title"><h1 id="pageTitle">Tổng quan</h1><p>Theo dõi, phân công và kiểm soát tiến độ công việc tập trung.</p></div><div class="actions"><button class="btn" onclick="refreshData()">↻ Làm mới</button><button class="btn primary" onclick="openModal()">＋ Giao nhiệm vụ</button></div></div>
 
-    <!-- KHU VỰC 1: TRANG CẬP NHẬT NHIỆM VỤ -->
-    <div id="viewUpdate">
-      <!-- Khung tiến độ cá nhân / theo nhiệm vụ hiện tại -->
-      <div id="statsSection" class="mb-3" style="display:none;">
-        <div class="card stat-card p-3 bg-white border-start border-primary border-4">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="fw-bold text-primary small" id="statsTitle">ĐÁNH GIÁ TIẾN ĐỘ THỰC HIỆN</span>
-            <span class="badge bg-primary fw-bold" id="statPercent">0%</span>
-          </div>
-          <div class="row text-center g-2 mb-2">
-            <div class="col-4">
-              <div class="p-2 bg-light rounded">
-                <small class="text-muted d-block" style="font-size:11px;">CHỈ TIÊU</small>
-                <strong class="text-dark" id="statTotal">0</strong>
-              </div>
-            </div>
-            <div class="col-4">
-              <div class="p-2 bg-light rounded">
-                <small class="text-muted d-block" style="font-size:11px;">ĐÃ LÀM</small>
-                <strong class="text-success" id="statDone">0</strong>
-              </div>
-            </div>
-            <div class="col-4">
-              <div class="p-2 bg-light rounded">
-                <small class="text-muted d-block" style="font-size:11px;">CÒN LẠI</small>
-                <strong class="text-danger" id="statRemain">0</strong>
-              </div>
-            </div>
-          </div>
-          <div class="progress">
-            <div id="progressBar" class="progress-bar bg-success" style="width: 0%"></div>
-          </div>
-        </div>
-      </div>
+<section id="dashboard" class="screen active">
+<div class="grid">
+<div class="card kpi"><div class="label">Tổng nhiệm vụ</div><div class="num" id="kTotal">0</div><div class="sub blue">Trong kỳ hiện tại</div></div>
+<div class="card kpi"><div class="label">Đã hoàn thành</div><div class="num green" id="kDone">0</div><div class="sub green">Đang theo dõi</div></div>
+<div class="card kpi"><div class="label">Đang thực hiện</div><div class="num blue" id="kDoing">0</div><div class="sub">Cần tiếp tục cập nhật</div></div>
+<div class="card kpi"><div class="label">Quá hạn</div><div class="num red" id="kLate">0</div><div class="sub red">Cần xử lý</div></div>
+</div>
+<div class="section"><div class="card"><h3>Tiến độ theo nhóm công việc</h3><div id="groups"></div></div><div class="card"><h3>Việc cần chú ý</h3><div id="alerts"></div></div></div>
+<div class="section"><div class="card"><h3>Nhiệm vụ gần hạn</h3><div id="upcoming"></div></div><div class="card"><h3>Tiến độ cán bộ</h3><div id="peopleMini"></div></div></div>
+</section>
 
-      <div class="card p-3 mb-3 shadow-sm border-0">
-        <label class="form-label fw-bold text-secondary small">BƯỚC 1: CHỌN NHIỆM VỤ</label>
-        <select id="taskSelect" class="form-select border-primary fw-bold text-dark" onchange="onTaskChange()">
-          <option value="">-- Chọn nội dung nhiệm vụ --</option>
-          <option value="hkcch">Hộ không có chủ hộ (HKCCH)</option>
-          <option value="matuy">Test đối tượng ma túy</option>
-          <option value="dcttp">Điều chỉnh Tổ dân phố (ĐCTTP)</option>
-          <option value="datdai">Làm sạch dữ liệu đất đai (Lần 4)</option>
-        </select>
-      </div>
+<section id="tasks" class="screen"><div class="card"><div class="toolbar"><input id="taskSearch" placeholder="Tìm nhiệm vụ, người thực hiện..." oninput="renderTasks()"><select id="taskFilter" onchange="renderTasks()"><option value="">Tất cả trạng thái</option><option>Đã hoàn thành</option><option>Đang thực hiện</option><option>Chưa bắt đầu</option><option>Quá hạn</option></select><button class="btn primary" onclick="openModal()">＋ Thêm nhiệm vụ</button></div><div style="overflow:auto"><table class="table"><thead><tr><th>Nhiệm vụ</th><th>Người thực hiện</th><th>Hạn</th><th>Tiến độ</th><th>Trạng thái</th></tr></thead><tbody id="taskRows"></tbody></table></div></div></section>
 
-      <div id="staffSection" class="card p-3 mb-3 shadow-sm border-0" style="display:none;">
-        <label class="form-label fw-bold text-secondary small">BƯỚC 2: CHỌN TÊN CÁN BỘ</label>
-        <select id="staffSelect" class="form-select border-success" onchange="onStaffChange()">
-          <option value="">-- Chạm để chọn tên cán bộ --</option>
-        </select>
-      </div>
+<section id="timeline" class="screen"><div class="card"><h3>Dòng thời gian tiến độ</h3><div id="timelineRows"></div></div></section>
 
-      <div id="loading" class="loading">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p class="mt-2 text-muted small">Đang tải dữ liệu...</p>
-      </div>
+<section id="reports" class="screen"><div class="section single"><div class="card"><h3>Báo cáo nhanh</h3><div class="grid" style="margin-top:8px"><div class="card kpi"><div class="label">Hoàn thành đúng hạn</div><div class="num green">87%</div></div><div class="card kpi"><div class="label">Tỷ lệ tồn</div><div class="num orange">16%</div></div><div class="card kpi"><div class="label">Nhiệm vụ/cán bộ</div><div class="num blue">6,9</div></div><div class="card kpi"><div class="label">Thời gian xử lý TB</div><div class="num">3,4 ngày</div></div></div><p style="color:var(--muted);font-size:13px;margin-top:16px">Có thể mở rộng xuất Excel/PDF và báo cáo theo tuần, tháng, cán bộ, đơn vị hoặc nhóm nhiệm vụ.</p></div></div></section>
 
-      <div id="dataContainer" style="display:none;">
-        <h6 class="fw-bold text-dark mb-2 px-1 small">BƯỚC 3: CẬP NHẬT KẾT QUẢ</h6>
-        <div id="itemList"></div>
-      </div>
-    </div>
+<section id="people" class="screen"><div class="card"><h3>Danh sách cán bộ</h3><div id="peopleRows"></div></div></section>
 
-    <!-- KHU VỰC 2: TRANG DASHBOARD TỔNG QUAN TOÀN CỤC -->
-    <div id="viewDashboard" style="display:none;">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h6 class="fw-bold text-secondary m-0">📊 TỔNG HỢP TIẾN ĐỘ CÁC NHIỆM VỤ</h6>
-        <button class="btn btn-outline-primary btn-sm fw-bold" onclick="loadDashboard()">🔄 Tải lại</button>
-      </div>
-      <div id="dashboardContent">
-        <div class="text-center py-5">
-          <div class="spinner-border text-primary" role="status"></div>
-          <p class="mt-2 text-muted small">Đang tổng hợp dữ liệu...</p>
-        </div>
-      </div>
-    </div>
-  </div>
+<section id="admin" class="screen"><div class="section"><div class="card"><h3>Thiết lập hệ thống</h3><div class="form"><label>Tên đơn vị<input value="Công an phường"></label><label>Kỳ báo cáo<select><option>Tháng hiện tại</option><option>Quý hiện tại</option><option>Năm 2026</option></select></label><label class="full">Nguồn dữ liệu<textarea rows="3" placeholder="URL Google Apps Script / API..."></textarea></label></div><button class="btn primary" style="margin-top:12px" onclick="alert('Thiết lập mẫu đã sẵn sàng để kết nối API.')">Lưu thiết lập</button></div><div class="card"><h3>Phân quyền</h3><p style="font-size:13px;color:var(--muted)">Quản trị viên · Chỉ huy · Cán bộ thực hiện · Chỉ xem báo cáo</p></div></div></section>
+</main></div>
 
-  <script>
-    function switchTab(tab) {
-      var tabUpdate = document.getElementById('tabUpdate');
-      var tabDashboard = document.getElementById('tabDashboard');
-      var viewUpdate = document.getElementById('viewUpdate');
-      var viewDashboard = document.getElementById('viewDashboard');
+<div class="modal" id="modal"><div class="modal-box"><div class="modal-head"><h3 style="margin:0">Giao nhiệm vụ</h3><button class="btn" onclick="closeModal()">✕</button></div><div class="form" style="margin-top:16px">
+<label class="full">Tên nhiệm vụ<input id="mTitle" placeholder="Ví dụ: Rà soát, làm sạch dữ liệu"></label><label>Người thực hiện<select id="mPerson"></select></label><label>Hạn hoàn thành<input id="mDue" type="date"></label><label>Nhóm nhiệm vụ<select><option>Thường xuyên</option><option>Đột xuất</option><option>Chuyên đề</option></select></label><label>Mức độ<select><option>Bình thường</option><option>Quan trọng</option><option>Khẩn</option></select></label><label class="full">Ghi chú<textarea rows="3"></textarea></label>
+</div><button class="btn primary" style="margin-top:14px" onclick="addTask()">Tạo nhiệm vụ</button></div></div>
 
-      if (tab === 'update') {
-        tabUpdate.className = "nav-link active";
-        tabDashboard.className = "nav-link text-secondary";
-        viewUpdate.style.display = 'block';
-        viewDashboard.style.display = 'none';
-      } else {
-        tabDashboard.className = "nav-link active";
-        tabUpdate.className = "nav-link text-secondary";
-        viewDashboard.style.display = 'block';
-        viewUpdate.style.display = 'none';
-        loadDashboard();
-      }
-    }
-
-    function loadDashboard() {
-      var container = document.getElementById('dashboardContent');
-      container.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted small">Đang tổng hợp dữ liệu...</p></div>';
-
-      google.script.run.withSuccessHandler(function(data) {
-        container.innerHTML = '';
-        var tasks = [
-          { key: 'hkcch', name: '🏠 Hộ không có chủ hộ (HKCCH)' },
-          { key: 'matuy', name: '🧪 Test đối tượng ma túy' },
-          { key: 'dcttp', name: '🗺️ Điều chỉnh Tổ dân phố (ĐCTTP)' },
-          { key: 'datdai', name: '📋 Làm sạch dữ liệu đất đai (Lần 4)' }
-        ];
-
-        tasks.forEach(function(t) {
-          var stat = data[t.key];
-          var card = document.createElement('div');
-          card.className = 'card stat-card p-3 mb-3 bg-white border-start border-primary border-4';
-          card.innerHTML = `
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="fw-bold text-dark small">${t.name}</span>
-              <span class="badge bg-primary fw-bold">${stat.percent}%</span>
-            </div>
-            <div class="row text-center g-2 mb-2">
-              <div class="col-4">
-                <div class="p-2 bg-light rounded">
-                  <small class="text-muted d-block" style="font-size:11px;">CHỈ TIÊU</small>
-                  <strong class="text-dark">${stat.total}</strong>
-                </div>
-              </div>
-              <div class="col-4">
-                <div class="p-2 bg-light rounded">
-                  <small class="text-muted d-block" style="font-size:11px;">ĐÃ LÀM</small>
-                  <strong class="text-success">${stat.done}</strong>
-                </div>
-              </div>
-              <div class="col-4">
-                <div class="p-2 bg-light rounded">
-                  <small class="text-muted d-block" style="font-size:11px;">CÒN LẠI</small>
-                  <strong class="text-danger">${stat.remain}</strong>
-                </div>
-              </div>
-            </div>
-            <div class="progress">
-              <div class="progress-bar bg-success" style="width: ${stat.percent}%"></div>
-            </div>
-          `;
-          container.appendChild(card);
-        });
-      }).getAllDashboardStats();
-    }
-
-    function onTaskChange() {
-      var taskType = document.getElementById('taskSelect').value;
-      var staffSection = document.getElementById('staffSection');
-      var staffSelect = document.getElementById('staffSelect');
-      var statsSection = document.getElementById('statsSection');
-      
-      document.getElementById('dataContainer').style.display = 'none';
-      staffSelect.innerHTML = '<option value="">-- Chạm để chọn tên cán bộ --</option>';
-      
-      if (!taskType) { 
-        staffSection.style.display = 'none'; 
-        statsSection.style.display = 'none';
-        return; 
-      }
-      
-      staffSection.style.display = 'block';
-      document.getElementById('loading').style.display = 'block';
-
-      google.script.run.withSuccessHandler(function(stats) {
-        statsSection.style.display = 'block';
-        document.getElementById('statsTitle').textContent = "TIẾN ĐỘ CHUNG TOÀN NHIỆM VỤ";
-        document.getElementById('statTotal').textContent = stats.total;
-        document.getElementById('statDone').textContent = stats.done;
-        document.getElementById('statRemain').textContent = stats.remain;
-        document.getElementById('statPercent').textContent = stats.percent + '%';
-        document.getElementById('progressBar').style.width = stats.percent + '%';
-      }).getTaskStats(taskType);
-
-      google.script.run.withSuccessHandler(function(staffList) {
-        document.getElementById('loading').style.display = 'none';
-        staffList.forEach(function(s) {
-          var opt = document.createElement('option');
-          opt.value = s.id; opt.textContent = s.name;
-          staffSelect.appendChild(opt);
-        });
-      }).getStaffList(taskType);
-    }
-
-    function onStaffChange() {
-      var taskType = document.getElementById('taskSelect').value;
-      var identifier = document.getElementById('staffSelect').value;
-      
-      if (!identifier) { 
-        document.getElementById('dataContainer').style.display = 'none'; 
-        onTaskChange();
-        return; 
-      }
-      
-      document.getElementById('loading').style.display = 'block';
-      document.getElementById('dataContainer').style.display = 'none';
-      
-      google.script.run.withSuccessHandler(function(res) {
-        document.getElementById('loading').style.display = 'none';
-        
-        document.getElementById('statsTitle').textContent = "ĐÁNH GIÁ TIẾN ĐỘ CÁ NHÂN CÁN BỘ";
-        document.getElementById('statTotal').textContent = res.stats.total;
-        document.getElementById('statDone').textContent = res.stats.done;
-        document.getElementById('statRemain').textContent = res.stats.remain;
-        document.getElementById('statPercent').textContent = res.stats.percent + '%';
-        document.getElementById('progressBar').style.width = res.stats.percent + '%';
-
-        document.getElementById('dataContainer').style.display = 'block';
-        var listDiv = document.getElementById('itemList'); listDiv.innerHTML = '';
-        
-        var records = res.records;
-        if (records.length === 0) {
-          listDiv.innerHTML = '<div class="alert alert-success text-center fw-bold">Không có dữ liệu hoặc đã hoàn thành chỉ tiêu theo phân công!</div>';
-          return;
-        }
-
-        records.forEach(function(r) {
-          var card = document.createElement('div');
-          card.className = 'card card-item p-3 ' + (r.isDone ? 'done-card' : '');
-          card.id = 'card_' + r.stt;
-          
-          if (taskType === 'dcttp') {
-            card.innerHTML = `
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge-stt">STT: ${r.stt}</span>
-                <span class="badge ${r.isDone ? 'bg-success' : 'bg-secondary'}">${r.isDone ? 'Đã điều chỉnh' : 'Chưa điều chỉnh'}</span>
-              </div>
-              <div class="small text-dark">
-                <div class="fw-bold text-primary fs-6 mb-1">${r.hoTen || '...'}</div>
-                <div class="mb-2">Tổng nhân khẩu cần điều chỉnh là: <strong class="text-danger fs-6">${r.info1 || '0'}</strong></div>
-                <div class="mt-2 pt-2 border-top">
-                  <label class="form-label small fw-bold mb-1">Số lượng đã điều chỉnh:</label>
-                  <div class="input-group input-group-sm">
-                    <input type="number" id="input_dcttp_${r.stt}" class="form-control" value="${r.statusText || ''}" placeholder="Nhập số lượng...">
-                    <button class="btn btn-primary fw-bold px-3" onclick="saveDcttpRecord(${r.stt}, this)">LƯU</button>
-                  </div>
-                </div>
-              </div>
-            `;
-          } else if (taskType === 'hkcch') {
-            var tenTo = r.toDanPho.toLowerCase().includes('tổ') ? r.toDanPho : ('Tổ dân phố ' + (r.toDanPho.match(/\d+/) || r.toDanPho));
-            card.innerHTML = `
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge-stt">STT: ${r.stt}</span>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="check_${r.stt}" ${r.isDone ? 'checked' : ''} onchange="saveSimpleStatus('hkcch', ${r.stt}, this)">
-                  <label class="form-check-label fw-bold small ${r.isDone ? 'text-success' : 'text-muted'}" id="label_${r.stt}">
-                    ${r.isDone ? 'Đã thực hiện' : 'Chưa thực hiện'}
-                  </label>
-                </div>
-              </div>
-              <div class="small text-dark">
-                <div><strong>Họ tên chủ hộ:</strong> <span class="text-primary fw-bold">${r.hoTen || '...'}</span></div>
-                <div><strong>Số hồ sơ:</strong> ${r.info1 || '...'} | <strong>Khu vực:</strong> ${tenTo}</div>
-              </div>
-            `;
-          } else if (taskType === 'matuy') {
-            var tenTo = r.toDanPho.toLowerCase().includes('tổ') ? r.toDanPho : ('Tổ dân phố ' + (r.toDanPho.match(/\d+/) || r.toDanPho));
-            card.innerHTML = `
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge-stt">STT: ${r.stt}</span>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="check_${r.stt}" ${r.isDone ? 'checked' : ''} onchange="saveSimpleStatus('matuy', ${r.stt}, this)">
-                  <label class="form-check-label fw-bold small ${r.isDone ? 'text-success' : 'text-muted'}" id="label_${r.stt}">
-                    ${r.isDone ? 'Đã Test' : 'Chưa Test'}
-                  </label>
-                </div>
-              </div>
-              <div class="small text-dark">
-                <div><strong>Họ tên đối tượng:</strong> <span class="text-danger fw-bold">${r.hoTen || '...'}</span></div>
-                <div><strong>Thông tin:</strong> ${r.info1 || '...'} | <strong>Khu vực:</strong> ${tenTo}</div>
-              </div>
-            `;
-          } else {
-            card.innerHTML = `
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="badge-stt">STT: ${r.stt}</span>
-              </div>
-              <h6 class="fw-bold text-primary mb-1">${r.chuHo || 'Không rõ tên'}</h6>
-              <div class="small text-dark mb-2">
-                CMND: <strong class="text-danger">${r.cmnd || 'Không có'}</strong> | NS gốc: <strong>${r.namSinh || '...'}</strong>
-                <span class="text-muted d-block mt-1 fst-italic">ĐC: ${r.diaChi || ''}</span>
-              </div>
-              
-              <div class="row g-2 mb-2 mt-2">
-                <div class="col-6">
-                  <div class="form-check box-check p-2 rounded d-flex align-items-center justify-content-center">
-                    <input class="form-check-input me-2" type="checkbox" id="noInfo_${r.stt}" onchange="toggleLandLogic(${r.stt}, 'noinfo')">
-                    <label class="form-check-label fw-bold text-danger m-0" for="noInfo_${r.stt}">KHÔNG CÓ TT</label>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <div class="form-check box-check p-2 rounded d-flex align-items-center justify-content-center">
-                    <input class="form-check-input me-2" type="checkbox" id="wrongInfo_${r.stt}" onchange="toggleLandLogic(${r.stt}, 'wrong')">
-                    <label class="form-check-label fw-bold text-warning m-0" for="wrongInfo_${r.stt}">SAI THÔNG TIN</label>
-                  </div>
-                </div>
-              </div>
-
-              <div id="div_cccd_${r.stt}">
-                <div class="mb-2">
-                  <label class="form-label small fw-bold mb-1">Số Căn cước / ĐDCN <span class="text-danger">*</span></label>
-                  <input type="number" id="cccd_${r.stt}" class="form-control border-success form-control-sm" placeholder="Nhập đủ 12 số...">
-                </div>
-                <div class="mb-2">
-                  <label class="form-label small fw-bold mb-1">Ngày/Tháng/Năm sinh <span class="text-danger">*</span></label>
-                  <input type="text" id="dob_${r.stt}" class="form-control border-success form-control-sm" placeholder="VD: 15/08/1985">
-                </div>
-              </div>
-
-              <div id="div_wrong_${r.stt}" style="display: none;" class="mb-2">
-                <label class="form-label small fw-bold mb-1 text-warning">Nội dung sai/đính chính <span class="text-danger">*</span></label>
-                <textarea id="wrong_detail_${r.stt}" class="form-control border-warning form-control-sm" rows="2" placeholder="Ví dụ: Sai họ tên..."></textarea>
-              </div>
-
-              <div id="div_reason_${r.stt}" style="display: none;" class="mb-2">
-                <label class="form-label small fw-bold mb-1 text-danger">Lý do <span class="text-danger">*</span></label>
-                <select id="reason_${r.stt}" class="form-select border-danger form-select-sm">
-                  <option value="">-- Chọn lý do --</option>
-                  <option value="Không tìm thấy trên CSDL">Không tìm thấy trên CSDL</option>
-                  <option value="Chết">Chết</option>
-                </select>
-              </div>
-              
-              <button class="btn btn-primary w-100 fw-bold shadow-sm mt-2 btn-sm py-2" onclick="saveLandRecord(${r.stt}, this)">LƯU DỮ LIỆU</button>
-            `;
-          }
-          listDiv.appendChild(card);
-        });
-      }).getDataForTask(taskType, identifier);
-    }
-
-    function toggleLandLogic(stt, type) {
-      var wrongCheck = document.getElementById('wrongInfo_' + stt);
-      var noInfoCheck = document.getElementById('noInfo_' + stt);
-      var divCccd = document.getElementById('div_cccd_' + stt);
-      var divWrong = document.getElementById('div_wrong_' + stt);
-      var divReason = document.getElementById('div_reason_' + stt);
-
-      if (type === 'wrong' && wrongCheck.checked) noInfoCheck.checked = false;
-      if (type === 'noinfo' && noInfoCheck.checked) wrongCheck.checked = false;
-
-      divCccd.style.display = (!wrongCheck.checked && !noInfoCheck.checked) ? 'block' : 'none';
-      divWrong.style.display = wrongCheck.checked ? 'block' : 'none';
-      divReason.style.display = noInfoCheck.checked ? 'block' : 'none';
-    }
-
-    function saveSimpleStatus(taskType, stt, checkbox) {
-      var status = "";
-      if (taskType === 'matuy') status = checkbox.checked ? "Đã Test" : "";
-      else status = checkbox.checked ? "Đã thực hiện" : "";
-
-      var label = document.getElementById('label_' + stt);
-      var card = document.getElementById('card_' + stt);
-      
-      checkbox.disabled = true;
-      google.script.run.withSuccessHandler(function(res) {
-        checkbox.disabled = false;
-        if(res === "Success") {
-          if (checkbox.checked) {
-            label.textContent = (taskType === 'matuy') ? "Đã Test" : "Đã thực hiện";
-            label.className = "form-check-label fw-bold small text-success";
-            card.classList.add('done-card');
-          } else {
-            label.textContent = (taskType === 'matuy') ? "Chưa Test" : "Chưa thực hiện";
-            label.className = "form-check-label fw-bold small text-muted";
-            card.classList.remove('done-card');
-          }
-        } else { alert("Lỗi lưu dữ liệu!"); checkbox.checked = !checkbox.checked; }
-      }).saveTaskRecord(taskType, stt, { status: status });
-    }
-
-    function saveDcttpRecord(stt, btnElement) {
-      var inputVal = document.getElementById('input_dcttp_' + stt).value.trim();
-      if (inputVal === "") {
-        alert("Vui lòng nhập số lượng đã điều chỉnh!");
-        return;
-      }
-      
-      btnElement.disabled = true;
-      btnElement.textContent = "ĐANG LƯU...";
-      
-      google.script.run.withSuccessHandler(function(res) {
-        btnElement.disabled = false;
-        if(res === "Success") {
-          btnElement.textContent = "ĐÃ LƯU ✓";
-          btnElement.className = "btn btn-success fw-bold px-3";
-          var card = document.getElementById('card_' + stt);
-          card.classList.add('done-card');
-        } else {
-          alert("Lỗi lưu dữ liệu!");
-          btnElement.textContent = "LƯU";
-        }
-      }).saveTaskRecord('dcttp', stt, { status: inputVal });
-    }
-
-    function saveLandRecord(stt, btnElement) {
-      var wrongCheck = document.getElementById('wrongInfo_' + stt).checked;
-      var noInfoCheck = document.getElementById('noInfo_' + stt).checked;
-      var mainVal = '', status = '', dob = '';
-
-      if (wrongCheck) {
-        var detail = document.getElementById('wrong_detail_' + stt).value;
-        if (detail.trim().length < 3) { alert('Vui lòng nhập nội dung sai!'); return; }
-        mainVal = detail; status = "Sai thông tin: " + detail; dob = "";
-      } else if (noInfoCheck) {
-        status = document.getElementById('reason_' + stt).value;
-        if (!status) { alert('Vui lòng chọn lý do!'); return; }
-        mainVal = status; dob = "";
-      } else {
-        var cccd = document.getElementById('cccd_' + stt).value;
-        dob = document.getElementById('dob_' + stt).value.trim();
-        if (cccd.length < 12) { alert('Vui lòng nhập đủ 12 số CCCD!'); return; }
-        var dobRegex = /^([0-2]?[0-9]|3[0-1])\/([0-1]?[0-9])\/(\d{4})$/;
-        if (!dobRegex.test(dob)) { alert('Vui lòng nhập định dạng DD/MM/YYYY!'); return; }
-        mainVal = cccd; status = 'Đã cập nhật số CCCD';
-      }
-
-      btnElement.disabled = true; btnElement.textContent = "ĐANG LƯU...";
-      google.script.run.withSuccessHandler(function(res) {
-        if(res === "Success") {
-          btnElement.textContent = "THÀNH CÔNG ✓"; btnElement.className = "btn btn-success w-100 btn-sm";
-          setTimeout(function() { document.getElementById('card_' + stt).style.opacity = '0'; setTimeout(function() { document.getElementById('card_' + stt).style.display = 'none'; }, 500); }, 600);
-        } else { alert("Lỗi hệ thống!"); btnElement.disabled = false; btnElement.textContent = "LƯU DỮ LIỆU"; }
-      }).saveTaskRecord('datdai', stt, { mainVal: mainVal, status: status, dob: dob });
-    }
-  </script>
-</body>
-</html>
+<script>
+const people=[{name:'Nguyễn Văn A',unit:'Tổ 1',done:8,total:10},{name:'Trần Văn B',unit:'Tổ 2',done:6,total:8},{name:'Lê Văn C',unit:'Tổ 3',done:4,total:7},{name:'Phạm Văn D',unit:'Tổ 4',done:3,total:5}];
+let tasks=[
+{name:'Rà soát dữ liệu dân cư',person:'Nguyễn Văn A',due:'2026-09-27',progress:80,status:'Đang thực hiện'},
+{name:'Kiểm tra đối tượng quản lý',person:'Trần Văn B',due:'2026-09-26',progress:100,status:'Đã hoàn thành'},
+{name:'Điều chỉnh thông tin địa bàn',person:'Lê Văn C',due:'2026-09-25',progress:45,status:'Quá hạn'},
+{name:'Cập nhật hồ sơ',person:'Phạm Văn D',due:'2026-09-30',progress:15,status:'Đang thực hiện'},
+{name:'Tổng hợp báo cáo tuần',person:'Nguyễn Văn A',due:'2026-09-28',progress:100,status:'Đã hoàn thành'}
+];
+const $=id=>document.getElementById(id);
+function statusClass(s){return s==='Đã hoàn thành'?'s-done':s==='Quá hạn'?'s-late':s==='Chưa bắt đầu'?'s-pending':'s-doing'}
+function renderTasks(){const q=$('taskSearch').value.toLowerCase(),f=$('taskFilter').value;const list=tasks.filter(x=>(!q||(x.name+x.person).toLowerCase().includes(q))&&(!f||x.status===f));$('taskRows').innerHTML=list.map(x=>'<tr><td><strong>'+x.name+'</strong></td><td>'+x.person+'</td><td>'+new Date(x.due).toLocaleDateString('vi-VN')+'</td><td style="min-width:130px"><div class="progress"><i style="width:'+x.progress+'%"></i></div><small>'+x.progress+'%</small></td><td><span class="status '+statusClass(x.status)+'">'+x.status+'</span></td></tr>').join('')}
+function renderDashboard(){const total=tasks.length,done=tasks.filter(x=>x.status==='Đã hoàn thành').length,doing=tasks.filter(x=>x.status==='Đang thực hiện').length,late=tasks.filter(x=>x.status==='Quá hạn').length;$('kTotal').textContent=total;$('kDone').textContent=done;$('kDoing').textContent=doing;$('kLate').textContent=late;
+$('groups').innerHTML=[['Thường xuyên',22,73],['Chuyên đề',14,57],['Đột xuất',12,42]].map(g=>'<div style="margin:12px 0"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><strong>'+g[0]+'</strong><span>'+g[2]+'%</span></div><div class="progress"><i style="width:'+g[2]+'%"></i></div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+g[1]+' nhiệm vụ</div></div>').join('');
+const lateList=tasks.filter(x=>x.status==='Quá hạn');$('alerts').innerHTML=lateList.map(x=>'<div style="padding:10px 0;border-bottom:1px solid var(--line)"><strong style="font-size:13px">'+x.name+'</strong><div style="font-size:12px;color:var(--muted)">'+x.person+' · Hạn '+new Date(x.due).toLocaleDateString('vi-VN')+'</div></div>').join('')||'<p style="color:var(--muted)">Không có nhiệm vụ quá hạn.</p>';
+$('upcoming').innerHTML=tasks.slice().sort((a,b)=>a.due.localeCompare(b.due)).slice(0,4).map(x=>'<div style="padding:9px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px"><div><strong style="font-size:13px">'+x.name+'</strong><div style="font-size:12px;color:var(--muted)">'+x.person+'</div></div><span class="status '+statusClass(x.status)+'">'+x.status+'</span></div>').join('');
+$('peopleMini').innerHTML=people.map(p=>{let pct=Math.round(p.done/p.total*100);return '<div class="person"><div class="avatar">'+p.name.split(' ').map(s=>s[0]).slice(-2).join('')+'</div><div class="meta"><strong>'+p.name+'</strong><small>'+p.unit+' · '+p.done+'/'+p.total+' nhiệm vụ</small></div><strong>'+pct+'%</strong></div>'}).join('')}
+function renderPeople(){$('peopleRows').innerHTML=people.map(p=>'<div class="person"><div class="avatar">'+p.name.split(' ').map(s=>s[0]).slice(-2).join('')+'</div><div class="meta"><strong>'+p.name+'</strong><small>'+p.unit+'</small><div class="progress" style="margin-top:6px"><i style="width:'+Math.round(p.done/p.total*100)+'%"></i></div></div><strong>'+p.done+'/'+p.total+'</strong></div>').join('')}
+function renderTimeline(){$('timelineRows').innerHTML=tasks.slice().sort((a,b)=>a.due.localeCompare(b.due)).map(x=>'<div style="display:grid;grid-template-columns:130px 1fr 90px;gap:14px;padding:14px 0;border-bottom:1px solid var(--line);align-items:center"><div><strong>'+new Date(x.due).toLocaleDateString('vi-VN')+'</strong></div><div><strong style="font-size:13px">'+x.name+'</strong><div style="color:var(--muted);font-size:12px">'+x.person+'</div><div class="progress" style="margin-top:7px"><i style="width:'+x.progress+'%"></i></div></div><span class="status '+statusClass(x.status)+'">'+x.progress+'%</span></div>').join('')}
+function openModal(){$('modal').classList.add('show');$('mPerson').innerHTML=people.map(p=>'<option>'+p.name+'</option>').join('')}
+function closeModal(){$('modal').classList.remove('show')}
+function addTask(){const title=$('mTitle').value.trim();if(!title){alert('Nhập tên nhiệm vụ');return}tasks.unshift({name:title,person:$('mPerson').value,due:$('mDue').value||'2026-09-30',progress:0,status:'Chưa bắt đầu'});closeModal();$('mTitle').value='';renderAll()}
+function refreshData(){renderAll();alert('Đã cập nhật dữ liệu hiển thị.')}
+function renderAll(){renderTasks();renderDashboard();renderTimeline();renderPeople()}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(b.dataset.screen).classList.add('active');$('pageTitle').textContent=b.textContent.replace(/^\S+\s/,'')});
+renderAll();
+</script>
+</body></html>
