@@ -15,7 +15,7 @@
 <div class="logo">TASK<span>FLOW</span> <b>PRO</b></div>
 <div class="userbox"><div class="user"><div class="avatar">QT</div><div><strong>Quản trị viên</strong><small>Toàn quyền hệ thống</small></div></div></div>
 <nav class="nav">
-<button class="active" data-page="dashboard">📊 Tổng quan</button><button data-page="tasks">✓ Công việc</button><button data-page="timeline">◷ Tiến độ</button><button data-page="reports">▥ Báo cáo</button><button data-page="staff">♙ Cán bộ</button><button data-page="settings">⚙ Cài đặt</button>
+<button class="active" data-page="dashboard">📊 Tổng quan</button><button data-page="tasks">✓ Công việc</button><button data-page="timeline">◷ Tiến độ</button><button data-page="reports">▥ Báo cáo</button><button data-page="staff">♙ Cán bộ</button><button data-page="settings">⚙ Quản trị & TDP</button>
 </nav></aside>
 <main class="main">
 <header class="top"><div><h1 id="title">Tổng quan</h1><p id="subtitle">Hệ thống quản lý và theo dõi tiến độ công việc.</p></div><div class="actions"><button class="btn" onclick="exportData()">↧ Sao lưu</button><button class="btn primary" onclick="openTask()">＋ Giao nhiệm vụ</button></div></header>
@@ -32,19 +32,19 @@
 
 <section id="reports" class="screen"><div class="cols one"><div class="card"><h3>Báo cáo tổng hợp</h3><div class="kpis" style="margin-top:10px"><div class="card kpi"><div class="label">Tỷ lệ hoàn thành</div><div class="num green" id="rDone">0%</div></div><div class="card kpi"><div class="label">Đúng hạn</div><div class="num blue" id="rOn">0%</div></div><div class="card kpi"><div class="label">Tồn đọng</div><div class="num orange" id="rOpen">0</div></div><div class="card kpi"><div class="label">Cán bộ</div><div class="num" id="rStaff">0</div></div></div><div class="notice" style="margin-top:16px">Dữ liệu được lưu trực tiếp trên trình duyệt bằng bộ nhớ cục bộ. Không sử dụng Google Sheets.</div></div></div></section>
 
-<section id="staff" class="screen"><div class="card"><div class="flex"><h3>Danh sách cán bộ</h3><button class="btn primary" onclick="openStaff()">＋ Thêm cán bộ</button></div><div id="staffRows"></div></div></section>
+<section id="staff" class="screen"><div class="card"><div class="flex"><h3>Cán bộ & tài khoản</h3><button class="btn primary" onclick="openStaff()">＋ Tạo tài khoản cán bộ</button></div><div id="staffRows"></div></div></section>
 
 <section id="settings" class="screen"><div class="settings"><div class="card"><h3>Thông tin đơn vị</h3><div class="form"><label class="full">Tên hệ thống<input class="input" id="sysName" value="Hệ thống quản lý công việc"></label><label>Đơn vị<input class="input" id="unitName" value="Công an phường"></label><label>Người quản trị<input class="input" value="Quản trị viên"></label></div><button class="btn primary" style="margin-top:14px" onclick="saveSettings()">Lưu</button></div><div class="card"><h3>Dữ liệu</h3><p class="muted">Dữ liệu hiện được lưu trên thiết bị đang sử dụng.</p><button class="btn" onclick="exportData()">Tải bản sao lưu JSON</button> <button class="btn danger" onclick="resetData()">Xóa dữ liệu mẫu</button></div></div></section>
-</main></div>
+<section id="wardAdmin" class="screen"><div class="card"><div class="flex"><h3>Cấu hình Tổ dân phố</h3><button class="btn primary" onclick="addWard()">＋ Thêm TDP</button></div><div class="toolbar"><input class="input" id="wardName" placeholder="Tên Tổ dân phố, ví dụ Tổ dân phố 04"><input class="input" id="wardNote" placeholder="Ghi chú/khu vực"></div><div id="wardRows"></div></div></section></main></div>
 
 <div class="modal" id="taskModal"><div class="modalbox"><div class="flex"><h3>Giao nhiệm vụ</h3><button class="close" onclick="closeModal('taskModal')">✕</button></div><div class="form"><label class="full">Tên nhiệm vụ<input class="input" id="tName" placeholder="Nhập nội dung nhiệm vụ"></label><label>Người thực hiện<select class="select" id="tPerson"></select></label><label>Hạn hoàn thành<input class="input" id="tDue" type="date"></label><label>Nhóm<select class="select" id="tGroup"><option>Thường xuyên</option><option>Chuyên đề</option><option>Đột xuất</option></select></label><label>Mức độ<select class="select" id="tPriority"><option>Bình thường</option><option>Quan trọng</option><option>Khẩn</option></select></label><label class="full">Ghi chú<textarea class="input" id="tNote" rows="3"></textarea></label></div><div style="text-align:right;margin-top:15px"><button class="btn" onclick="closeModal('taskModal')">Hủy</button> <button class="btn primary" onclick="saveTask()">Tạo nhiệm vụ</button></div></div></div>
-<div class="modal" id="staffModal"><div class="modalbox"><div class="flex"><h3>Thêm cán bộ</h3><button class="close" onclick="closeModal('staffModal')">✕</button></div><div class="form"><label>Họ và tên<input class="input" id="sName"></label><label>Đơn vị/Tổ<input class="input" id="sUnit"></label></div><div style="text-align:right;margin-top:15px"><button class="btn" onclick="closeModal('staffModal')">Hủy</button> <button class="btn primary" onclick="saveStaff()">Thêm</button></div></div></div>
+<div class="modal" id="staffModal"><div class="modalbox"><div class="flex"><h3>Thêm cán bộ</h3><button class="close" onclick="closeModal('staffModal')">✕</button></div><div class="form"><label>Họ và tên<input class="input" id="sName"></label><label>Đơn vị/Tổ công tác<input class="input" id="sUnit"></label><label>Tên tài khoản<input class="input" id="sUser" placeholder="Ví dụ: cb.nguyenvana"></label><label>Vai trò<select class="select" id="sRole"><option>Cán bộ thực hiện</option><option>Chỉ huy</option><option>Chỉ xem</option></select></label><label>Địa bàn phụ trách<input class="input" id="sArea" placeholder="Nhập các TDP, ngăn cách bằng dấu phẩy"></label></div><div style="text-align:right;margin-top:15px"><button class="btn" onclick="closeModal('staffModal')">Hủy</button> <button class="btn primary" onclick="saveStaff()">Thêm</button></div></div></div>
 <div class="toast" id="toast"></div>
 <script>
 const KEY='taskflow_pro_v1';
 let db=JSON.parse(localStorage.getItem(KEY)||'null')||{
  settings:{name:'Hệ thống quản lý công việc',unit:'Công an phường'},
- staff:[{id:'p1',name:'Nguyễn Văn A',unit:'Tổ 1'},{id:'p2',name:'Trần Văn B',unit:'Tổ 2'},{id:'p3',name:'Lê Văn C',unit:'Tổ 3'},{id:'p4',name:'Phạm Văn D',unit:'Tổ 4'}],
+ wards:[{id:'w1',name:'Tổ dân phố 01',note:''},{id:'w2',name:'Tổ dân phố 02',note:''},{id:'w3',name:'Tổ dân phố 03',note:''}],staff:[{id:'p1',name:'Nguyễn Văn A',unit:'Tổ 1',username:'nguyenvana',role:'Cán bộ thực hiện',area:'Tổ dân phố 01, Tổ dân phố 02'},{id:'p2',name:'Trần Văn B',unit:'Tổ 2',username:'tranvanb',role:'Cán bộ thực hiện',area:'Tổ dân phố 03'},{id:'p3',name:'Lê Văn C',unit:'Tổ 3',username:'levanc',role:'Chỉ huy',area:''},{id:'p4',name:'Phạm Văn D',unit:'Tổ 4',username:'phamvand',role:'Cán bộ thực hiện',area:''}],
  tasks:[
  {id:'1',name:'Rà soát dữ liệu dân cư',person:'p1',due:'2026-09-27',progress:80,status:'Đang thực hiện',group:'Thường xuyên',priority:'Quan trọng'},
  {id:'2',name:'Kiểm tra đối tượng quản lý',person:'p2',due:'2026-09-26',progress:100,status:'Đã hoàn thành',group:'Chuyên đề',priority:'Bình thường'},
@@ -53,7 +53,7 @@ let db=JSON.parse(localStorage.getItem(KEY)||'null')||{
  ]};
 function persist(){localStorage.setItem(KEY,JSON.stringify(db))}
 const $=id=>document.getElementById(id);
-const person=id=>db.staff.find(x=>x.id===id)?.name||'Chưa phân công';
+const person=id=>db.staff.find(x=>x.id===id)?.name||'Chưa phân công'; const wards=()=>db.wards||[];
 function badge(s){return s==='Đã hoàn thành'?'done':s==='Quá hạn'?'late':s==='Chưa bắt đầu'?'todo':'doing'}
 function fmt(d){return d?new Date(d+'T00:00:00').toLocaleDateString('vi-VN'):'—'}
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1800)}
