@@ -139,7 +139,12 @@ async function initAuth(){
   supabase.auth.onAuthStateChange(async(event,session)=>{if(session){window.__authUser=session.user;$('authGate').style.display='none';await loadCloud()}});
 }
 
-const $=id=>document.getElementById(id);
+
+function normalizePdfName(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\.pdf$/i,'').replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim()}
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function searchPdfs(){const box=$('pdfResults'),raw=($('pdfSearch')?.value||'').trim();if(!raw){box.innerHTML='<div class="empty">Nhập họ tên để bắt đầu tra cứu.</div>';return}if(!supabase||!window.__authUser){box.innerHTML='<div class="empty">Bạn cần đăng nhập để tra cứu.</div>';return}const q=normalizePdfName(raw).replace(/[%_]/g,'');box.innerHTML='<div class="empty">Đang tìm...</div>';const {data,error}=await supabase.from('pdf_documents').select('id,full_name,file_name,storage_path').ilike('normalized_name','%'+q+'%').order('full_name').limit(100);if(error){box.innerHTML='<div class="empty">Không thể tra cứu: '+escapeHtml(error.message)+'</div>';return}if(!data?.length){box.innerHTML='<div class="empty">Không tìm thấy hồ sơ phù hợp.</div>';return}window.__pdfResults=data;box.innerHTML=data.map(x=>'<div class="row"><div><strong>📄 '+escapeHtml(x.full_name)+'</strong><div class="muted">'+escapeHtml(x.file_name)+'</div></div><button class="btn primary" onclick="openPdf(\''+x.id+'\')">Mở PDF</button></div>').join('')}
+async function openPdf(id){const row=(window.__pdfResults||[]).find(x=>x.id===id);if(!row)return;const {data,error}=await supabase.storage.from('taskflow-pdfs').createSignedUrl(row.storage_path,300);if(error||!data?.signedUrl){toast('Không mở được PDF');return}window.open(data.signedUrl,'_blank','noopener')}
+\nconst $=id=>document.getElementById(id);
 const person=id=>db.staff.find(x=>x.id===id)?.name||'Chưa phân công'; const wards=()=>db.wards||[];
 function badge(s){return s==='Đã hoàn thành'?'done':s==='Quá hạn'?'late':s==='Chưa bắt đầu'?'todo':'doing'}
 function fmt(d){return d?new Date(d+'T00:00:00').toLocaleDateString('vi-VN'):'—'}
